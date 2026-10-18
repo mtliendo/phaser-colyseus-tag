@@ -1,4 +1,4 @@
-import { displayName, initAuth, login, renderAuthActions } from "./auth";
+import { displayName, initAuth, isGuestMode, login, renderAuthActions } from "./auth";
 
 const actions = document.querySelector<HTMLElement>("#auth-actions");
 const ctaRow = document.querySelector<HTMLElement>("#cta-row");
@@ -15,7 +15,7 @@ const addLink = (href: string, label: string, primary = false): void => {
   ctaRow.append(a);
 };
 
-if (session.authenticated) {
+if (isGuestMode() || session.authenticated) {
   addLink("/host", "Open host screen", true);
   addLink("/play", "Join as player");
 } else {
@@ -28,7 +28,12 @@ if (session.authenticated) {
   addLink("/host", "I'm the host");
 }
 
-if (session.authenticated) {
+if (isGuestMode()) {
+  const note = document.createElement("p");
+  note.className = "muted";
+  note.textContent = "Guest mode is on — pick a nickname and jump in. No login.";
+  ctaRow.after(note);
+} else if (session.authenticated) {
   const note = document.createElement("p");
   note.className = "muted";
   note.textContent = `Signed in as ${displayName(session)}.`;

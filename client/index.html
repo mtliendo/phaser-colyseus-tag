@@ -37,12 +37,13 @@
         <h2>How it works</h2>
         <ol class="steps">
           <li>
-            <strong>Host</strong> opens <code>/host</code> on a laptop, signs in
-            with a text-code (email passwordless), and creates a room.
+            <strong>Host</strong> opens <code>/host</code> on a laptop and
+            creates a room. Guest mode skips login; Auth0 passwordless is still
+            wired for later.
           </li>
           <li>
-            <strong>Players</strong> scan the QR code, sign in on their phone,
-            pick a nickname, and drive a virtual joystick.
+            <strong>Players</strong> scan the QR code, pick a nickname, and
+            drive a virtual joystick.
           </li>
           <li>
             One random player starts as <em>it</em>. Touching someone passes the
@@ -58,7 +59,7 @@
           <li>Positions, collisions, tags, and the clock live on the server.</li>
           <li>Clients only send joystick input.</li>
           <li>If <em>it</em> disconnects, the room reassigns immediately.</li>
-          <li>Reconnects rejoin the same player slot by Auth0 <code>sub</code>.</li>
+          <li>Reconnects rejoin the same player slot by guest id or Auth0 <code>sub</code>.</li>
         </ul>
       </section>
     </div>

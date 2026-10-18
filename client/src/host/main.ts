@@ -1,6 +1,6 @@
 import QRCode from "qrcode";
 import type { Room } from "@colyseus/sdk";
-import { displayName, initAuth, login, renderAuthActions } from "../auth";
+import { displayName, guestIdFromSession, initAuth, isGuestMode, login, renderAuthActions } from "../auth";
 import { createHostRoom, formatClock } from "../colyseus";
 import { createGame } from "../game/createGame";
 import { HostScene } from "../game/HostScene";
@@ -26,6 +26,10 @@ const session = await initAuth();
 renderAuthActions(session, actions);
 
 if (!session.authenticated || !session.token) {
+  if (isGuestMode()) {
+    statusEl.textContent = "Guest session missing";
+    throw new Error("guest session missing");
+  }
   statusEl.textContent = "Login required";
   await login();
   throw new Error("redirecting to login");
@@ -35,7 +39,7 @@ statusEl.textContent = `Host · ${displayName(session)}`;
 
 let room: Room;
 try {
-  room = await createHostRoom(session.token);
+  room = await createHostRoom(session.token, guestIdFromSession(session));
 } catch (error) {
   statusEl.textContent = "Could not create room";
   showError(error);

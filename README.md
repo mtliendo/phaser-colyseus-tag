@@ -3,9 +3,11 @@
 A reusable multiplayer **tag** starter: phones are controllers, a laptop is the
 host arena, and a [Colyseus](https://colyseus.io) server owns the game. The
 client is **Vite + vanilla TypeScript + Phaser 4** (never Next.js). Auth is
-**Auth0 passwordless**. This repo is Focus Otter's personal starter — another
-agent will later fork it for a conference talk and add [OpenFGA](https://openfga.dev)
-rule checks plus host controls that change rules mid-game.
+**Auth0 passwordless**, with an env-flag **guest mode** so deployed previews
+can be played without login (Auth0 code stays intact). This repo is Focus
+Otter's personal starter — another agent will later fork it for a conference
+talk and add [OpenFGA](https://openfga.dev) rule checks plus host controls
+that change rules mid-game.
 
 ```
 pnpm dev          # server :2567 + client :5173
@@ -15,13 +17,13 @@ pnpm dev          # server :2567 + client :5173
 
 ## What it is
 
-- **Host screen** (`/host`, laptop, login required): creates a room, shows a QR
+- **Host screen** (`/host`, laptop): creates a room, shows a QR
   code for `/play?room=<id>`, a live player list, and Start. During the round it
   renders the full map, every player, who is *it*, and the countdown. At the end
-  it shows results.
-- **Player screen** (`/play?room=…`, phone, login required): joins with an
-  editable nickname (from the Auth0 profile), a portrait-friendly virtual
-  joystick, and a simple view of *you* plus `"You're IT!"` and the timer.
+  it shows results. Guest mode skips login; Auth0 mode requires it.
+- **Player screen** (`/play?room=…`, phone): joins with an
+  editable nickname (from the guest store or Auth0 profile), a portrait-friendly
+  virtual joystick, and a simple view of *you* plus `"You're IT!"` and the timer.
   Page scroll/zoom are disabled.
 - **Rules** (server-authoritative, 2-minute round):
   - one map, a handful of obstacles
@@ -59,9 +61,9 @@ flowchart LR
   P1 --> C
   P2 --> C
   H --> C
-  C -->|login / token| UL
-  C -->|joinOrCreate / joinById + token| S
-  S -->|jose + JWKS| API
+  C -->|guest token or Auth0 login| UL
+  C -->|create / joinById + token| S
+  S -->|guest skip, else jose + JWKS| API
   S -->|schema state| C
 ```
 
@@ -103,14 +105,45 @@ pnpm dev
 One command runs **both** packages (`@tag/server` on `:2567`, `@tag/client` on
 `:5173`).
 
-Dev-only join tokens (`dev:<id>:<nickname>`) are accepted when
-`ALLOW_DEV_TOKENS=true` and `NODE_ENV` is not `production`. The client shows a
-**Dev guest** button in Vite dev, and `?devName=Alice` auto-signs a guest so
-Playwright / the sim script can drive the UI without Auth0.
-
 ```bash
-pnpm sim    # 3 headless players: join, start, tag, timer
+AUTH_MODE=guest pnpm sim    # 3 headless players: join, start, tag, timer
 ```
+
+See [Guest mode](#guest-mode) for the no-login path used on deployed previews.
+
+## Guest mode
+
+Flight / preview testing can skip Auth0 without deleting any of the SPA or
+JWKS code. Flip two env flags:
+
+| Side | Variable | Guest value | Auth0 value |
+| --- | --- | --- | --- |
+| Client (Vite / Vercel) | `VITE_AUTH_MODE` | `guest` | unset or `auth0` |
+| Server (Node / Railway) | `AUTH_MODE` | `guest` | unset or `auth0` |
+
+**When guest mode is on**
+
+- `/` CTAs go straight to `/host` and `/play`. Login buttons are hidden.
+- `/host` and `/play` never redirect to Auth0. Players type a nickname
+  (max 16 chars). A random guest id + nickname is stored in `localStorage`
+  (`tag:guest-session`) so reloads reconnect to the same slot.
+- The client joins with a `guest:<id>:<nickname>` token (and also sends
+  `nickname` / `guestId` on the join options).
+- The server **skips JWKS**. It accepts `guest:<id>:<nickname>`, the same
+  `dev:<id>:<nickname>` tokens used by `pnpm sim`, or options with only a
+  nickname. Production **does not** accept `dev:` tokens unless `AUTH_MODE=guest`.
+- Auth0 SPA SDK + `jose` verification stay in the repo for the switch-back.
+
+**Switch back to Auth0**
+
+1. Set `VITE_AUTH_MODE=auth0` (or remove it) on Vercel Preview + Production
+   and redeploy the client.
+2. Set `AUTH_MODE=auth0` (or remove it) on Railway and redeploy the server.
+3. Keep `ALLOW_DEV_TOKENS` off in production. `dev:` tokens then work only
+   locally (`ALLOW_DEV_TOKENS=true` and `NODE_ENV` not `production`).
+
+Local Vite still has a **Dev guest** button and `?devName=Alice` /
+`?guestName=Alice` for Playwright when you want a named session.
 
 ## Environment variables
 
@@ -122,6 +155,7 @@ pnpm sim    # 3 headless players: join, start, tag, timer
 | `VITE_AUTH0_CLIENT_ID` | SPA application client id |
 | `VITE_AUTH0_AUDIENCE` | API identifier (`https://tag.phaser.game`) |
 | `VITE_AUTH0_CONNECTION` | Passwordless connection name (`email`) |
+| `VITE_AUTH_MODE` | `guest` skips login UI. Unset / `auth0` keeps Auth0. |
 | `VITE_COLYSEUS_URL` | Game server (`http://localhost:2567` locally) |
 
 ### Server (`server/.env`, also Railway)
@@ -131,9 +165,10 @@ pnpm sim    # 3 headless players: join, start, tag, timer
 | `PORT` | Listen port (Railway sets this) |
 | `AUTH0_DOMAIN` | Same tenant host as the client |
 | `AUTH0_AUDIENCE` | Same API identifier |
+| `AUTH_MODE` | `guest` accepts guest joins and skips JWKS. Unset / `auth0` is strict. |
 | `CORS_ORIGIN` | Comma-separated browser origins. `*.vercel.app` allowed |
-| `ALLOW_DEV_TOKENS` | `true` only on local / CI — **never** in production |
-| `NODE_ENV` | `production` disables the `dev:` token path |
+| `ALLOW_DEV_TOKENS` | `true` only on local / CI. Production ignores `dev:` unless `AUTH_MODE=guest`. |
+| `NODE_ENV` | `production` disables the `dev:` token path unless guest mode is on |
 
 ## Auth0 setup
 
@@ -203,6 +238,7 @@ Required project env vars (Production + Preview):
 - `VITE_AUTH0_CLIENT_ID`
 - `VITE_AUTH0_AUDIENCE`
 - `VITE_AUTH0_CONNECTION=email`
+- `VITE_AUTH_MODE=guest` — flight / preview no-login (set `auth0` to restore login)
 - `VITE_COLYSEUS_URL` — the Railway public URL (`https://….up.railway.app`)
 
 Then add the preview/prod origins on the Auth0 SPA.
@@ -220,6 +256,7 @@ railway login
 railway init          # or railway link
 railway variables set AUTH0_DOMAIN=<tenant>.auth0.com
 railway variables set AUTH0_AUDIENCE=https://tag.phaser.game
+railway variables set AUTH_MODE=guest
 railway variables set CORS_ORIGIN=https://<vercel-app>.vercel.app,https://*.vercel.app
 railway variables set NODE_ENV=production
 railway up
@@ -250,6 +287,6 @@ non-interactively (`railway login` is skipped; `RAILWAY_TOKEN` is enough).
 | --- | --- |
 | `pnpm dev` | Client + server together |
 | `pnpm --filter @tag/client build` | Vite production build |
-| `pnpm sim` | Headless 3-player tag + timer check |
+| `pnpm sim` | Headless 3-player tag + timer check (server must be up; uses guest tokens when `AUTH_MODE=guest`) |
 
 No automated unit test suite — this is a spike. `pnpm sim` is the verification.

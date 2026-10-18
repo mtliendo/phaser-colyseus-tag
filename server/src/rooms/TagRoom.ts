@@ -7,6 +7,7 @@ import {
   OBSTACLES,
   PLAYER_COLORS,
   RoomPhase,
+  sanitizeNickname,
   type InputMessage,
   type JoinOptions,
   type SetNicknameMessage,
@@ -82,12 +83,13 @@ export class TagRoom extends Room<{ state: TagRoomState }> {
   }
 
   /**
-   * Reject unauthenticated joins. `options.token` is the Auth0 access token
-   * (or a `dev:` token when ALLOW_DEV_TOKENS is on).
+   * Reject unauthenticated joins unless AUTH_MODE=guest.
+   * `options.token` is the Auth0 access token, a `guest:<id>:<nick>` token,
+   * or a `dev:` token when that path is enabled.
    */
   async onAuth(_client: Client, options: JoinOptions): Promise<AuthIdentity> {
     try {
-      return await verifyJoinToken(options?.token);
+      return await verifyJoinToken(options?.token, options);
     } catch (error) {
       const reason = error instanceof Error ? error.message : "Unauthorized";
       throw new ServerError(401, reason);
@@ -383,7 +385,3 @@ function clampAxis(value: unknown): number {
   return Math.max(-1, Math.min(1, n));
 }
 
-function sanitizeNickname(value: string): string {
-  const cleaned = value.replace(/\s+/g, " ").trim().slice(0, 24);
-  return cleaned || "Player";
-}

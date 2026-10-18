@@ -1,5 +1,14 @@
 import type { Room } from "@colyseus/sdk";
-import { displayName, initAuth, login, renderAuthActions } from "../auth";
+import {
+  displayName,
+  guestIdFromSession,
+  initAuth,
+  isGuestMode,
+  login,
+  renderAuthActions,
+  updateGuestNickname,
+} from "../auth";
+import { NICKNAME_MAX } from "@tag/shared";
 import { formatClock, joinPlayerRoom } from "../colyseus";
 import { createGame } from "../game/createGame";
 import { attachJoystick, preventPageGestures } from "../game/joystick";
@@ -21,16 +30,27 @@ const joinError = must("#join-error");
 const itStatus = must("#it-status");
 const joystickEl = must("#joystick");
 
-const session = await initAuth();
+let session = await initAuth();
 renderAuthActions(session, actions);
 
 if (!session.authenticated || !session.token) {
+  if (isGuestMode()) {
+    statusEl.textContent = "Guest session missing";
+    throw new Error("guest session missing");
+  }
   statusEl.textContent = "Login required";
   await login();
   throw new Error("redirecting to login");
 }
 
+nicknameInput.maxLength = NICKNAME_MAX;
 nicknameInput.value = displayName(session);
+if (isGuestMode()) {
+  nicknameInput.addEventListener("change", () => {
+    session = updateGuestNickname(nicknameInput.value);
+    renderAuthActions(session, actions);
+  });
+}
 const params = new URLSearchParams(window.location.search);
 roomInput.value = params.get("room") ?? "";
 
@@ -46,6 +66,10 @@ async function connect(): Promise<void> {
   joinError.hidden = true;
   const roomId = roomInput.value.trim();
   const nickname = nicknameInput.value.trim() || displayName(session);
+  if (isGuestMode()) {
+    session = updateGuestNickname(nickname);
+    renderAuthActions(session, actions);
+  }
   if (!roomId) {
     joinError.hidden = false;
     joinError.textContent = "Room id is required.";
@@ -56,7 +80,7 @@ async function connect(): Promise<void> {
   joinBtn.disabled = true;
   statusEl.textContent = "Joining…";
   try {
-    const room = await joinPlayerRoom(roomId, session.token, nickname);
+    const room = await joinPlayerRoom(roomId, session.token, nickname, guestIdFromSession(session));
     onJoined(room);
   } catch (error) {
     joinBtn.disabled = false;

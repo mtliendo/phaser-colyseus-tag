@@ -1,5 +1,7 @@
 /**
- * Headless 3-player verification. Uses the local-only `dev:` token path.
+ * Headless 3-player verification.
+ * Uses `guest:<id>:<nickname>` when AUTH_MODE=guest, otherwise the local
+ * `dev:` token path (ALLOW_DEV_TOKENS=true, not production).
  * Run the server first (`pnpm --filter @tag/server dev`) then `pnpm sim`.
  */
 import { Client } from "@colyseus/sdk";
@@ -22,7 +24,8 @@ function sleep(ms: number): Promise<void> {
 }
 
 function token(id: string, nickname: string): string {
-  return `dev:${id}:${nickname}`;
+  const prefix = process.env.AUTH_MODE === "guest" ? "guest" : "dev";
+  return `${prefix}:${id}:${nickname}`;
 }
 
 function playersOf(state: { players: Map<string, PlayerView> }): PlayerView[] {

@@ -4,6 +4,8 @@ export type JoinOptions = {
   token?: string;
   role?: JoinRole;
   nickname?: string;
+  /** Guest-mode identity when no Auth0 token is used. */
+  guestId?: string;
 };
 
 export type InputMessage = {

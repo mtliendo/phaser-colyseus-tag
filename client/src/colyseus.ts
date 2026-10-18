@@ -9,19 +9,21 @@ export function getClient(): Client {
   return new Client(colyseusUrl());
 }
 
-export async function createHostRoom(token: string): Promise<Room> {
-  return getClient().create("tag", { token, role: "host" } satisfies JoinOptions);
+export async function createHostRoom(token: string, guestId?: string): Promise<Room> {
+  return getClient().create("tag", { token, role: "host", guestId } satisfies JoinOptions);
 }
 
 export async function joinPlayerRoom(
   roomId: string,
   token: string,
   nickname: string,
+  guestId?: string,
 ): Promise<Room> {
   return getClient().joinById(roomId, {
     token,
     role: "player",
     nickname,
+    guestId,
   } satisfies JoinOptions);
 }
 
