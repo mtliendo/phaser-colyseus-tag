@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+    />
+    <title>Host · Phaser Tag</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <div class="page page-host">
+      <header class="topbar">
+        <a class="brand" href="/">TAG</a>
+        <div class="topbar-meta">
+          <span id="host-status">Connecting…</span>
+          <span id="host-timer" class="timer" hidden></span>
+        </div>
+        <nav class="topbar-actions" id="auth-actions"></nav>
+      </header>
+
+      <section id="lobby" class="host-lobby">
+        <div class="qr-card">
+          <img id="qr" alt="Join QR code" />
+          <p class="room-id">Room <strong id="room-id">—</strong></p>
+          <p class="join-url" id="join-url"></p>
+        </div>
+        <div class="lobby-side">
+          <h1>Host screen</h1>
+          <p class="muted">Players scan the code on their phones. Start when you have at least two.</p>
+          <ul id="player-list" class="player-list"></ul>
+          <button id="start-btn" class="btn primary" type="button" disabled>Start round</button>
+          <p id="lobby-error" class="error" hidden></p>
+        </div>
+      </section>
+
+      <section id="arena-wrap" class="arena-wrap" hidden>
+        <div id="game-container" class="game-container"></div>
+        <aside class="hud-side">
+          <p class="it-banner" id="it-banner">Waiting…</p>
+          <ul id="live-list" class="player-list compact"></ul>
+        </aside>
+      </section>
+
+      <section id="results" class="results" hidden>
+        <h1>Results</h1>
+        <p class="muted">Least time as <em>it</em> wins.</p>
+        <ol id="scoreboard" class="scoreboard"></ol>
+        <a class="btn" href="/host">New room</a>
+      </section>
+    </div>
+    <script type="module" src="/src/host/main.ts"></script>
+  </body>
+</html>

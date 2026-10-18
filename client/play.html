@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+    />
+    <title>Play · Phaser Tag</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body class="play-body">
+    <div class="page page-play">
+      <header class="topbar play-topbar">
+        <a class="brand" href="/">TAG</a>
+        <div class="topbar-meta">
+          <span id="play-status">Join</span>
+          <span id="play-timer" class="timer" hidden></span>
+        </div>
+        <nav class="topbar-actions" id="auth-actions"></nav>
+      </header>
+
+      <section id="join-panel" class="join-panel">
+        <h1>Join a room</h1>
+        <label>
+          Nickname
+          <input id="nickname" type="text" maxlength="16" autocomplete="nickname" />
+        </label>
+        <label>
+          Room id
+          <input id="room-id-input" type="text" maxlength="16" autocapitalize="none" />
+        </label>
+        <button id="join-btn" class="btn primary" type="button">Join</button>
+        <p id="join-error" class="error" hidden></p>
+      </section>
+
+      <section id="play-arena" class="play-arena" hidden>
+        <p id="it-status" class="it-status">You're in.</p>
+        <div id="game-container" class="game-container play-game"></div>
+        <div id="joystick" class="joystick" aria-label="Move">
+          <div id="joystick-knob" class="joystick-knob"></div>
+        </div>
+      </section>
+    </div>
+    <script type="module" src="/src/play/main.ts"></script>
+  </body>
+</html>

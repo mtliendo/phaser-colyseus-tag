@@ -1,0 +1,20 @@
+{
+  "name": "phaser-colyseus-tag",
+  "private": true,
+  "packageManager": "pnpm@10.18.3",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @tag/server --filter @tag/client --parallel dev",
+    "build": "pnpm --filter @tag/client build && pnpm --filter @tag/server build",
+    "sim": "pnpm --filter @tag/server sim",
+    "shots": "node scripts/capture-screens.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.56.1"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild", "msgpackr-extract", "browser-tabs-lock"]
+  }
+}
