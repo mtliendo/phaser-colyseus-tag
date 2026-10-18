@@ -106,7 +106,9 @@ One command runs **both** packages (`@tag/server` on `:2567`, `@tag/client` on
 `:5173`).
 
 ```bash
-AUTH_MODE=guest pnpm sim    # 3 headless players: join, start, tag, timer
+AUTH_MODE=guest pnpm sim
+# against the deployed Railway server:
+AUTH_MODE=guest COLYSEUS_URL=https://phaser-colyseus-tag.up.railway.app pnpm sim
 ```
 
 See [Guest mode](#guest-mode) for the no-login path used on deployed previews.
