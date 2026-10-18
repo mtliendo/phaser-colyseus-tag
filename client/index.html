@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+    />
+    <title>Phaser Tag — phones vs laptop</title>
+    <meta
+      name="description"
+      content="A bare-bones Phaser 4 tag game. Laptop hosts the map. Phones are the controllers. Colyseus keeps score."
+    />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <div class="page page-home">
+      <header class="topbar">
+        <a class="brand" href="/">TAG</a>
+        <nav class="topbar-actions" id="auth-actions"></nav>
+      </header>
+
+      <main class="hero">
+        <p class="eyebrow">Focus Otter starter · Phaser 4 + Colyseus</p>
+        <h1>Phones are controllers.<br />The laptop is the arena.</h1>
+        <p class="lede">
+          A reusable multiplayer tag game: one host screen shows the map, every
+          phone joins with a QR code, and the Colyseus server decides who is
+          <em>it</em>. Built so a later talk can drop OpenFGA checks into
+          <code>canTag()</code> and flip rules mid-round.
+        </p>
+        <div class="cta-row" id="cta-row"></div>
+      </main>
+
+      <section class="how">
+        <h2>How it works</h2>
+        <ol class="steps">
+          <li>
+            <strong>Host</strong> opens <code>/host</code> on a laptop, signs in
+            with a text-code (email passwordless), and creates a room.
+          </li>
+          <li>
+            <strong>Players</strong> scan the QR code, sign in on their phone,
+            pick a nickname, and drive a virtual joystick.
+          </li>
+          <li>
+            One random player starts as <em>it</em>. Touching someone passes the
+            tag (with 1.5s tag-back immunity). Two minutes. Least time as
+            <em>it</em> wins.
+          </li>
+        </ol>
+      </section>
+
+      <section class="how">
+        <h2>Rules (server-authoritative)</h2>
+        <ul class="rules">
+          <li>Positions, collisions, tags, and the clock live on the server.</li>
+          <li>Clients only send joystick input.</li>
+          <li>If <em>it</em> disconnects, the room reassigns immediately.</li>
+          <li>Reconnects rejoin the same player slot by Auth0 <code>sub</code>.</li>
+        </ul>
+      </section>
+    </div>
+    <script type="module" src="/src/home.ts"></script>
+  </body>
+</html>

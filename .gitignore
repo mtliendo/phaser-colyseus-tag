@@ -1,0 +1,16 @@
+node_modules
+dist
+build
+.env
+.env.local
+.env.*.local
+.vercel
+.railway
+*.log
+.DS_Store
+coverage
+.turbo
+playwright-report
+test-results
+.pnpm-store
+*.tsbuildinfo
