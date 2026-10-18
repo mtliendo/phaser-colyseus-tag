@@ -185,6 +185,7 @@ Current tenant resources (ids are public):
 
 | Resource | Name | Id |
 | --- | --- | --- |
+| Tenant | Focus Otter Auth0 tenant | set `AUTH0_DOMAIN` / `VITE_AUTH0_DOMAIN` |
 | SPA | Phaser Colyseus Tag | `oGqXJ1wuK8dWqH67rhCPMWfPaafJKDvW` |
 | API | Phaser Colyseus Tag API | audience `https://tag.phaser.game` |
 | Connection | `email` (passwordless) | `con_0WvjaM39JQMbgb0I` |
@@ -225,9 +226,10 @@ railway up
 ```
 
 Copy the resulting public HTTPS URL into Vercel as `VITE_COLYSEUS_URL`.
-WebSockets work on Railway without extra config as long as the service is not
-forced to HTTP/2-only edge caching; the Colyseus transport shares the Express
-HTTP server.
+WebSockets work on Railway without extra config. Colyseus 0.18 matchmake
+already sends CORS (`Access-Control-Allow-Origin` reflects the request
+origin). Restrict it later via `matchMaker.controller.getCorsHeaders` if
+you need an allowlist.
 
 If `RAILWAY_TOKEN` is present in CI, the same `railway up` flow can run
 non-interactively (`railway login` is skipped; `RAILWAY_TOKEN` is enough).
